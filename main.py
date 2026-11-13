@@ -1,19 +1,21 @@
-import uvicorn
-from fastapi import FastAPI, status, HTTPException
-from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
 from uuid import uuid4
+import uvicorn
+from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
     allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
-tasks: list[Tasks] = []
+tasks = []
 
 
 class Tasks(BaseModel):
@@ -63,7 +65,7 @@ def delete_tasks(task_id: str):
 
 
 
-categories: list[Categories] = []
+categories = []
 
 
 class Categories(BaseModel):
@@ -96,8 +98,7 @@ def create_categories(payload: CategoriesCreate):
 @app.patch("/categories/{categories_id}", status_code=status.HTTP_200_OK)
 def update_categories(categories_id: str, payload: CategoriesUpdate):
     for category in categories:
-        if category.id == categories_id:
-            if payload.name:
+        if category.id == categories_id and payload.name:
                 category.name = payload.name
         if category is None:
             raise HTTPException(status_code=404, detail="category not found")
